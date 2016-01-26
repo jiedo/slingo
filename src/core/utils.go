@@ -1,76 +1,47 @@
 package core
 
 import (
-	"os"
-	"glog"
+	"ui"
+    "glog"
 )
 
 
-
-type Ball struct {
-    material int
-	weight int
-    size int
-
-    pos_x float64
-    pos_y float64
-    pos_z float64
-
-    speed_x float64
-    speed_y float64
-    speed_z	float64
-
-    energy int
-}
-
-type Catapult struct {
-    life int
-    energy int
-    weight int
-
-    direction float64
-    pos_x float64
-    pos_y float64
-    pos_z float64
-
-    left_wheel_speed_x float64
-    left_wheel_speed_y float64
-    left_wheel_speed_z float64
-
-    right_wheel_speed_x float64
-    right_wheel_speed_y float64
-    right_wheel_speed_z float64
-
-	left_wheel_force float64
-    right_wheel_force float64
-    aim_direction float64
-    aim_elevation float64
-
-    capacity_energy int
-    capacity_weight int
-    capacity_size int
-
-	balls []Ball
-}
-
-
-type Ground struct {
-    name string
-    process int
-    stdout string
-    returncode int
-    err error
-}
-
-
-
-func new_catapult() chan Command {
-	command_chan := make(chan Command)
+func (self *Ground) New_catapult() (cata Catapult) {
+	command_chan := make(chan ui.Command)
 	instruction_chan := make(chan Instruction)
 
-	cata Catapult
 	cata.command_chan = command_chan
 	cata.instruction_chan = instruction_chan
-	cata.Init()
+	// cata.Init()
+	go cata.interprete()
+
+    self.catapults.append(cata)
 	return cata
+}
+
+
+func (self *Ground) Start_all_catapults() {
+    for cata := range self.catapults {
+        go cata.Bot.Start(cata.command_chan)
+    }
+}
+
+
+func (self *Ground) Step_all_catapults() {
+    for cata := range self.catapults {
+        select {
+        case insturction := <- cata.instruction_chan:
+            cata.execute(insturction)
+        case <- time.After(time.Second):
+            // todo optimize
+        }
+    }
+}
+
+func (self *Ground) Refresh_ground() {
+    glog.Info("refresh...")
+}
+
+func (self *Ground) Scan(position Vector, direction float64, scope float64, distance float64) ([]Ball, []Catapult) {
+    return self.balls, self.catapults
 }
