@@ -8,8 +8,8 @@ import (
 
 type Slingo struct {
     command_chan chan Command
-	
-    cmd string
+
+    name string
 	result chan int
     err error
 }
@@ -17,7 +17,7 @@ type Slingo struct {
 // speed > 0: go ahead
 // speed = 0: stop
 // speed < 0: go back
-// 不同的调整幅度需要不同的耗时和耗能        
+// 不同的调整幅度需要不同的耗时和耗能
 func (self *Slingo) run(left_wheel_speed float64, right_wheel_speed float64) {
 	result_chan := make(chan [2]float64)
 
@@ -30,8 +30,8 @@ func (self *Slingo) run(left_wheel_speed float64, right_wheel_speed float64) {
 // 发射水平方向
 // 0 <= direction < 360
 // 发射仰角
-// 0 <= elevation < 90    
-// 不同的调整幅度需要不同的耗时和耗能    
+// 0 <= elevation < 90
+// 不同的调整幅度需要不同的耗时和耗能
 func (self *Slingo) aim(direction_angle float64, elevation_angle float64) {
 }
 
@@ -72,30 +72,30 @@ func (self *Slingo) get_position() (pos_x float64, pos_y float64, pos_z float64)
 }
 
 
-// 耗时1    
+// 耗时1
 // 向量speed
 // 等价于标量direction和标量wheel_speed
 func (self *Slingo) get_speed() (speed_x float64, speed_y float64, speed_z float64) {
-}   
+}
 
 
-// 耗时1   
+// 耗时1
 // 标量
 func (self *Slingo) get_direction() derection_angle float64 {
 }
 
-// 耗时1    
+// 耗时1
 // 标量
 func (self *Slingo) get_wheel_speed() left_wheel_speed float64, right_wheel_speed float64 {
-}   
+}
 
-// 耗时1   
+// 耗时1
 // 标量
 func (self *Slingo) get_wheel_force() left_wheel_force float64, right_wheel_force float64 {
- }   
+ }
 
 
-// 耗时1    
+// 耗时1
 func (self *Slingo) get_carried_balls() []Ball {
 }
 
@@ -103,7 +103,7 @@ func (self *Slingo) get_carried_balls() []Ball {
 func (self *Slingo) is_loaded() yes_or_no boolean {
 }
 
-// 耗时1    
+// 耗时1
 func (self *Slingo) get_aim() (direction_angle float64, elevation_angle float64) {
  }
 
@@ -124,5 +124,7 @@ func (self *Slingo) Start(command_chan chan Command) {
 
 }
 
-func main() {
+func Init() {
+	bot Slingo
+	bot.Init()
 }
