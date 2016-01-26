@@ -79,13 +79,13 @@ ball:
 弹药
 
     # 不同的weight需要不同的耗时和耗能
-    reload(type)
+    reload(material)
 
     # 不同的weight需要不同的耗时和耗能
-    pick_up_ball(type, number)
+    pick_up_ball(material, number)
     
     # 耗时1
-    throw_away_ball(type, number)
+    throw_away_ball(material, number)
 
 修复
 

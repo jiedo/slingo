@@ -60,3 +60,5 @@ Server每一周期按随机顺序执行每个客户端的一条指令。当一�
 前期将client实现成一个模块，编译进server。server启动时接入所有client，每个client在独立的goroutine中运行。后期可将命令channel接入部分封装出来，提供mq接口或者api接口，client可以实现动态接入。
 
 ## TODO：
+
+如何精细控制运动？当需要不停调整转轮力度时候，频繁调用命令是否可行？
