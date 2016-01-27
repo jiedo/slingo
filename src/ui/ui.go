@@ -1,8 +1,6 @@
 package ui
 
 
-// x_chin := make(chan int)
-
 type Material int
 
 const (
@@ -38,7 +36,7 @@ type ParaScan struct {
 }
 
 
-type Ball struct {
+type Pill struct {
     Material Material
 	Weight int
     Size int
@@ -49,7 +47,7 @@ type Ball struct {
     Is_carried bool
 }
 
-type Catapult struct {
+type Sling struct {
     Life int
     Energy int
     Weight int
@@ -71,8 +69,8 @@ type Catapult struct {
 
 
 type ResultScan struct {
-    Balls []Ball
-    Catapults []Catapult
+    Pills []*Pill
+    Slings []*Sling
 }
 
 type Command struct {
@@ -83,26 +81,7 @@ type Command struct {
 
 type AI interface {
 	Start(command chan Command)
+    GetName() string
 	Init()
 	Stop()
 }
-
-// type Catapult interface {
-// 	run(left_wheel_force float64, right_wheel_force float64)
-// 	aim(direction_angle float64, elevation_angle float64)
-// 	fire(speed float64)
-// 	reload(material Material)
-// 	pick_up_ball(material Material, number int)
-// 	throw_away_ball(material Material, number int)
-// 	repair(life_point int)
-// 	get_state() (energy int, life int)
-// 	get_position() (pos Vector)
-// 	get_speed() (speed Vector)
-// 	get_direction() (derection_angle float64)
-// 	get_wheel_speed() (left_wheel_speed float64, right_wheel_speed float64)
-// 	get_wheel_force() (left_wheel_force float64, right_wheel_force float64)
-// 	get_carried_balls() (n_plumbum int, n_stone int)
-// 	is_loaded() (yes_or_no bool)
-// 	get_aim() (direction_angle float64, elevation_angle float64)
-// 	scan(direction, scope, distance) ([]Ball, []Catapult)
-// }

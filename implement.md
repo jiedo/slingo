@@ -12,17 +12,17 @@ catapult:
     capacity_size
 
     direction
-    pos.x
-    pos.y
-    pos.z
+    pos.X
+    pos.Y
+    pos.Z
 
-    left_wheel_speed.x
-    left_wheel_speed.y
-    left_wheel_speed.z
+    left_wheel_speed.X
+    left_wheel_speed.Y
+    left_wheel_speed.Z
 
-    right_wheel_speed.x
-    right_wheel_speed.y
-    right_wheel_speed.z
+    right_wheel_speed.X
+    right_wheel_speed.Y
+    right_wheel_speed.Z
 
     balls[]
 
@@ -41,13 +41,13 @@ ball:
     weight
     size
 
-    pos.x
-    pos.y
-    pos.z
+    pos.X
+    pos.Y
+    pos.Z
 
-    speed.x
-    speed.y
-    speed.z
+    speed.X
+    speed.Y
+    speed.Z
 
 
 # user interface

@@ -3,9 +3,13 @@ package ibot
 import (
     "glog"
     "ui"
-	// "fmt"
     "time"
 )
+
+
+func (self *Slingo) Init() {
+    Bot.name = "ibot"
+}
 
 func (self *Slingo) Start(command_chan chan ui.Command) {
     self.command_chan = command_chan

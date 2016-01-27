@@ -2,26 +2,14 @@ package core
 
 import "ui"
 
-type Material int
-
-const (
-    Stone Material = iota
-    Plumbum
-)
-
-type Vector struct {
-    x float64
-    y float64
-    z float64
-}
 
 type Ball struct {
-    material Material
+    material ui.Material
 	weight int
     size int
 
-    pos Vector
-    speed Vector
+    pos ui.Vector
+    speed ui.Vector
 
     is_carried bool
 }
@@ -36,14 +24,15 @@ type Instruction struct {
 }
 
 type Catapult struct {
+    name string
     life int
     energy int
     weight int
 
     direction float64
-    pos Vector
-    left_wheel_speed Vector
-    right_wheel_speed Vector
+    pos ui.Vector
+    left_wheel_speed ui.Vector
+    right_wheel_speed ui.Vector
 
 	left_wheel_force float64
     right_wheel_force float64
@@ -54,8 +43,8 @@ type Catapult struct {
     capacity_weight int
     capacity_size int
 
-    load_slot Ball
-	balls []Ball
+    load_slot *Ball
+	balls []*Ball
 
 	command_chan chan ui.Command
 	instruction_chan chan Instruction
@@ -65,6 +54,6 @@ type Catapult struct {
 type Ground struct {
     name string
 
-    catapults []Catapult
-    balls []Ball
+    catapults []*Catapult
+    balls []*Ball
 }

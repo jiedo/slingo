@@ -2,6 +2,7 @@ package core
 
 import (
     "ui"
+    "math"
 )
 
 // 调整命令到指令, 每个bot启动一个, 并持续运行
@@ -14,56 +15,38 @@ func (self *Catapult) interprete() {
                 name: cmd.Name,
                 result_chan: cmd.Result_chan,
                 stage: 2,       // start
-                parameter: ui.ParaRun{
-                    Left_wheel_force: cmd.Parameter.Left_wheel_force,
-                    Right_wheel_force: cmd.Parameter.Right_wheel_force,
-                },
+                parameter: cmd.Parameter,
             }
 			self.instruction_chan <- Instruction {
                 name: cmd.Name,
                 result_chan: cmd.Result_chan,
                 stage: 1,       // doing
-                parameter: ui.ParaRun{
-                    Left_wheel_force: cmd.Parameter.Left_wheel_force,
-                    Right_wheel_force: cmd.Parameter.Right_wheel_force,
-                },
+                parameter: cmd.Parameter,
             }
 			self.instruction_chan <- Instruction {
                 name: cmd.Name,
                 result_chan: cmd.Result_chan,
                 stage: 0,       // end
-                parameter: ui.ParaRun{
-                    Left_wheel_force: cmd.Parameter.Left_wheel_force,
-                    Right_wheel_force: cmd.Parameter.Right_wheel_force,
-                },
+                parameter: cmd.Parameter,
             }
 		case "aim":
 			self.instruction_chan <- Instruction {
                 name: cmd.Name,
                 result_chan: cmd.Result_chan,
                 stage: 2,       // start
-                parameter: ui.ParaAim{
-                    Direction: cmd.Parameter.Direction,
-                    Elevation: cmd.Parameter.Elevation,
-                },
+                parameter: cmd.Parameter,
             }
 			self.instruction_chan <- Instruction {
                 name: cmd.Name,
                 result_chan: cmd.Result_chan,
                 stage: 1,       // doing
-                parameter: ui.ParaAim{
-                    Direction: cmd.Parameter.Direction,
-                    Elevation: cmd.Parameter.Elevation,
-                },
+                parameter: cmd.Parameter,
             }
 			self.instruction_chan <- Instruction {
                 name: cmd.Name,
                 result_chan: cmd.Result_chan,
                 stage: 0,       // end
-                parameter: ui.ParaAim{
-                    Direction: cmd.Parameter.Direction,
-                    Elevation: cmd.Parameter.Elevation,
-                },
+                parameter: cmd.Parameter,
             }
 		case "fire":
 			self.instruction_chan <- Instruction {
@@ -79,25 +62,19 @@ func (self *Catapult) interprete() {
                 stage: 0,       // start
                 parameter: cmd.Parameter,
             }
-		case "pick_up_ball":
+		case "pick_up":
 			self.instruction_chan <- Instruction {
                 name: cmd.Name,
                 result_chan: cmd.Result_chan,
                 stage: 0,       // start
-                parameter: ui.ParaThrowPick{
-                    Material: cmd.Parameter.Material,
-                    Number: cmd.Parameter.Number,
-                },
+                parameter: cmd.Parameter,
             }
-		case "throw_away_ball":
+		case "throw_away":
 			self.instruction_chan <- Instruction {
                 name: cmd.Name,
                 result_chan: cmd.Result_chan,
                 stage: 0,       // start
-                parameter: ui.ParaThrowPick{
-                    Material: cmd.Parameter.Material,
-                    Number: cmd.Parameter.Number,
-                },
+                parameter: cmd.Parameter,
             }
 		case "repair":
 			self.instruction_chan <- Instruction {
@@ -142,7 +119,7 @@ func (self *Catapult) interprete() {
                 result_chan: cmd.Result_chan,
                 stage: 0,       // start
             }
-		case "get_carried_balls":
+		case "get_cartridge":
 			self.instruction_chan <- Instruction {
                 name: cmd.Name,
                 result_chan: cmd.Result_chan,
@@ -165,11 +142,7 @@ func (self *Catapult) interprete() {
                 name: cmd.Name,
                 result_chan: cmd.Result_chan,
                 stage: 0,       // start
-                parameter: ui.ParaScan{
-                    Direction: cmd.Parameter.Direction,
-                    Scope: cmd.Parameter.Scope,
-                    Distance: cmd.Parameter.Distance,
-                },
+                parameter: cmd.Parameter,
             }
 		}                       // end of switch
 	}
@@ -178,101 +151,117 @@ func (self *Catapult) interprete() {
 
 // 执行单条指令, 每个bot每周期运行一次
 func (self *Catapult) execute(instruction Instruction) {
-    insturction.result = nil
+    instruction.result = nil
 	switch (instruction.name) {
 	case "run":
-        insturction.result = self.run(
-            insturction.parameter.left_wheel_force,
-            insturction.parameter.right_wheel_force)
+        if para, ok := instruction.parameter.(ui.ParaRun); ok {
+            instruction.result = self.run(
+                para.Left_wheel_force,
+                para.Right_wheel_force)
+        }
 	case "aim":
-        insturction.result = self.aim(
-            insturction.parameter.derection,
-            insturction.parameter.elevation)
+        if para, ok := instruction.parameter.(ui.ParaAim); ok {
+            instruction.result = self.aim(
+                para.Direction,
+                para.Elevation)
+        }
     case "fire":
-        insturction.result = self.fire(insturction.parameter)
+        if para, ok := instruction.parameter.(float64); ok {
+            instruction.result = self.fire(para)
+        }
     case "reload":
-        insturction.result = self.reload(insturction.parameter)
-    case "pick_up_ball":
-        insturction.result = self.pick_up_ball(
-            insturction.parameter.material,
-            insturction.parameter.number)
-    case "throw_away_ball":
-        insturction.result = self.throw_away_ball(
-            insturction.parameter.material,
-            insturction.parameter.number)
+        if para, ok := instruction.parameter.(ui.Material); ok {
+            instruction.result = self.reload(para)
+        }
+    case "pick_up":
+        if para, ok := instruction.parameter.(ui.ParaThrowPick); ok {
+            instruction.result = self.pick_up(
+                para.Material,
+                para.Number)
+        }
+    case "throw_away":
+        if para, ok := instruction.parameter.(ui.ParaThrowPick); ok {
+            instruction.result = self.throw_away(
+                para.Material,
+                para.Number)
+        }
     case "repair":
-        insturction.result = self.repair(insturction.parameter)
+        if para, ok := instruction.parameter.(int); ok {
+            instruction.result = self.repair(para)
+        }
     case "get_state":
         energy, life := self.get_state()
-        insturction.result = [2]int{energy, life}
+        instruction.result = [2]int{energy, life}
     case "get_position":
         pos := self.get_position()
-        insturction.result = pos
+        instruction.result = pos
     case "get_speed":
         speed := self.get_speed()
-        insturction.result = speed
+        instruction.result = speed
     case "get_direction":
-        derection_angle := self.get_direction()
-        insturction.result = derection_angle
+        direction_angle := self.get_direction()
+        instruction.result = direction_angle
     case "get_wheel_speed":
         left_wheel_speed, right_wheel_speed := self.get_wheel_speed()
-        insturction.result = [2]float64{left_wheel_speed, right_wheel_speed}
+        instruction.result = [2]float64{left_wheel_speed, right_wheel_speed}
     case "get_wheel_force":
         left_wheel_force, right_wheel_force := self.get_wheel_force()
-        insturction.result = [2]float64{left_wheel_force, right_wheel_force}
-    case "get_carried_balls":
-        n_plumbum, n_stone := self.get_carried_balls()
-        insturction.result = [2]int{n_plumbum, n_stone}
+        instruction.result = [2]float64{left_wheel_force, right_wheel_force}
+    case "get_cartridge":
+        n_plumbum, n_stone := self.get_cartridge()
+        instruction.result = [2]int{n_plumbum, n_stone}
     case "is_loaded":
         yes_or_no := self.is_loaded()
-        insturction.result = yes_or_no
+        instruction.result = yes_or_no
     case "get_aim":
-        derection_angle, elevation_angle := self.get_aim()
-        insturction.result = [2]float64{derection_angle, elevation_angle}
+        direction_angle, elevation_angle := self.get_aim()
+        instruction.result = [2]float64{direction_angle, elevation_angle}
     case "scan":
-        balls, catapults := self.scan(
-            insturction.parameter.direction,
-            insturction.parameter.scope,
-            insturction.parameter.distance)
+        if para, ok := instruction.parameter.(ui.ParaScan); ok {
+            balls, catapults := self.scan(
+                para.Direction,
+                para.Scope,
+                para.Distance)
 
-        ui_balls = make([]ui.Ball)
-        for ball := range balls {
-            append(ui_balls, ui.Ball{
-                Material:   ball.material,
-                Weight:     ball.weight,
-                Size:       ball.size,
-                Pos:        ball.pos,
-                Speed:      ball.speed,
-                Is_carried: ball.is_carried,
-            })
-        }
+            ui_pills := make([]*ui.Pill, CARTRIDGE_CAPACITY)
+            for _, ball := range balls {
+                ui_pills = append(ui_pills, &ui.Pill{
+                    Material:   ball.material,
+                    Weight:     ball.weight,
+                    Size:       ball.size,
+                    Pos:        ball.pos,
+                    Speed:      ball.speed,
+                    Is_carried: ball.is_carried,
+                })
+            }
 
-        ui_catapults = make([]ui.Catapult)
-        for catapult := range catapults {
-            append(ui_catapults, ui.Catapult{
-                Life:               catapult.life,
-                Energy:             catapult.energy,
-                Weight:             catapult.weight,
-                Direction:          catapult.direction,
-                Pos:                catapult.pos,
-                Left_wheel_speed:   catapult.left_wheel_speed,
-                Right_wheel_speed:  catapult.right_wheel_speed,
-                Left_wheel_force :  catapult.left_wheel_force,
-                Right_wheel_force : catapult.right_wheel_force,
-                Aim_direction :     catapult.aim_direction,
-                Aim_elevation :     catapult.aim_elevation,
-                Capacity_energy:    catapult.capacity_energy,
-                Capacity_weight :   catapult.capacity_weight,
-                Capacity_size :     catapult.capacity_size,
-            })
-        }
-        insturction.result = ui.ResultScan{
-            balls: ui_balls,
-            catapults: ui_catapults,
+            ui_slings := make([]*ui.Sling, GROUND_CAPACITY)
+            for _, catapult := range catapults {
+                ui_slings = append(ui_slings, &ui.Sling{
+                    Life:               catapult.life,
+                    Energy:             catapult.energy,
+                    Weight:             catapult.weight,
+                    Direction:          catapult.direction,
+                    Pos:                catapult.pos,
+                    Left_wheel_speed:   catapult.left_wheel_speed,
+                    Right_wheel_speed:  catapult.right_wheel_speed,
+                    Left_wheel_force :  catapult.left_wheel_force,
+                    Right_wheel_force : catapult.right_wheel_force,
+                    Aim_direction :     catapult.aim_direction,
+                    Aim_elevation :     catapult.aim_elevation,
+                    Capacity_energy:    catapult.capacity_energy,
+                    Capacity_weight :   catapult.capacity_weight,
+                    Capacity_size :     catapult.capacity_size,
+                })
+            }
+            instruction.result = ui.ResultScan{
+                Pills: ui_pills,
+                Slings: ui_slings,
+            }
         }
 	}
 	if instruction.stage == 0 {  // finish
-		insturction.result_chan <- insturction.result
+		instruction.result_chan <- instruction.result
 		return
 	}
 }
@@ -281,8 +270,8 @@ func (self *Catapult) execute(instruction Instruction) {
 // speed = 0: stop
 // speed < 0: go back
 // 不同的调整幅度需要不同的耗时和耗能
-func (self *Catapult) run_speed(left_wheel_speed float64, right_wheel_speed float64) {
-
+func (self *Catapult) run_speed(left_wheel_speed float64, right_wheel_speed float64) bool{
+    return false
 }
 
 
@@ -291,7 +280,7 @@ func (self *Catapult) run_speed(left_wheel_speed float64, right_wheel_speed floa
 // force < 0: go back
 // 不同的调整幅度需要不同的耗时和耗能
 // 返回值可以是坐标和速度, 便于精细控制
-func (self *Catapult) run(left_wheel_force float64, right_wheel_force float64) {
+func (self *Catapult) run(left_wheel_force float64, right_wheel_force float64) bool{
     self.left_wheel_force = left_wheel_force
     self.right_wheel_force = right_wheel_force
     return true
@@ -303,7 +292,7 @@ func (self *Catapult) run(left_wheel_force float64, right_wheel_force float64) {
 // 发射仰角
 // 0 <= elevation < 90
 // 不同的调整幅度需要不同的耗时和耗能
-func (self *Catapult) aim(direction_angle float64, elevation_angle float64) {
+func (self *Catapult) aim(direction_angle float64, elevation_angle float64) bool{
     if direction_angle >= 360 || direction_angle < 0 {
         return false
     }
@@ -317,26 +306,26 @@ func (self *Catapult) aim(direction_angle float64, elevation_angle float64) {
 
 
 // 不同的weight/speed需要不同的耗时和耗能
-func (self *Catapult) fire(speed float64) {
+func (self *Catapult) fire(speed float64) bool{
     if speed <= 0 {
         return false
     }
     if !self.is_loaded() {
         return false
     }
-    ball = self.load_slot
-    ball.pos.x = self.pos.x
-    ball.pos.y = self.pos.y
-    ball.pos.z = self.pos.z
+    ball := self.load_slot
+    ball.pos.X = self.pos.X
+    ball.pos.Y = self.pos.Y
+    ball.pos.Z = self.pos.Z
 
-    cosd = math.cos(self.aim_direction)
-    sind = math.sin(self.aim_direction)
-    cose = math.cos(self.aim_elevation)
-    sine = math.sin(self.aim_elevation)
+    cosd := math.Cos(self.aim_direction)
+    sind := math.Sin(self.aim_direction)
+    cose := math.Cos(self.aim_elevation)
+    sine := math.Sin(self.aim_elevation)
 
-    ball.speed.x = speed * cose * cosd
-    ball.speed.y = speed * cose * sind
-    ball.speed.z = speed * sine
+    ball.speed.X = speed * cose * cosd
+    ball.speed.Y = speed * cose * sind
+    ball.speed.Z = speed * sine
 
     ball.is_carried = false
     self.load_slot = nil
@@ -345,7 +334,7 @@ func (self *Catapult) fire(speed float64) {
 
 
 // 不同的weight需要不同的耗时和耗能
-func (self *Catapult) reload(material Material) {
+func (self *Catapult) reload(material ui.Material) bool{
     if self.is_loaded() {
         return true
     }
@@ -368,17 +357,17 @@ func (self *Catapult) reload(material Material) {
 
 // 不同的weight需要不同的耗时和耗能
 // return number of picked up
-func (self *Catapult) pick_up_ball(material Material, number int) {
+func (self *Catapult) pick_up(material ui.Material, number int) int{
     if number <= 0 {
         return 0
     }
     // todo: 读取ground.balls
     j := 0
-    for i:=0; i!=len(ground.balls) && j!=number; i++ {
-        ball := ground.balls[i]
+    for i:=0; i!=len(G_battle_ground.balls) && j!=number; i++ {
+        ball := G_battle_ground.balls[i]
         if material == ball.material && !ball.is_carried {
             ball.is_carried = true
-            append(self.balls, ball)
+            self.balls = append(self.balls, ball)
             j++
         }
     }
@@ -388,7 +377,7 @@ func (self *Catapult) pick_up_ball(material Material, number int) {
 // 耗时1
 // number 可能多于已有的同类material ball数目
 // return: number of throwed
-func (self *Catapult) throw_away_ball(material Material, number int) {
+func (self *Catapult) throw_away(material ui.Material, number int) int{
     if number <= 0 {
         return 0
     }
@@ -409,7 +398,7 @@ func (self *Catapult) throw_away_ball(material Material, number int) {
 }
 
 // 不同的life point需要不同的耗时和耗能
-func (self *Catapult) repair(life_point int) {
+func (self *Catapult) repair(life_point int) bool{
     self.life += life_point
     return true
 }
@@ -421,32 +410,36 @@ func (self *Catapult) get_state() (energy int, life int) {
 
 // 耗时1
 // 战车中心坐标
-func (self *Catapult) get_position() (pos Vector) {
+func (self *Catapult) get_position() (pos ui.Vector) {
     return self.pos
 }
 
 // 耗时1
 // 向量speed
 // 等价于标量direction和标量wheel_speed
-func (self *Catapult) get_speed() (speed Vector) {
-    return self.speed
+func (self *Catapult) get_speed() (speed ui.Vector) {
+    return ui.Vector{
+        X: (self.left_wheel_speed.X + self.right_wheel_speed.X)/2,
+        Y: (self.left_wheel_speed.Y + self.right_wheel_speed.Y)/2,
+        Z: (self.left_wheel_speed.Z + self.right_wheel_speed.Z)/2,
+    }
 }
 
 // 耗时1
 // 标量
-func (self *Catapult) get_direction() (derection_angle float64) {
+func (self *Catapult) get_direction() (direction_angle float64) {
     return self.direction
 }
 
 // 耗时1
 // 标量
 func (self *Catapult) get_wheel_speed() (left_wheel_speed float64, right_wheel_speed float64) {
-    left_wheel_speed = math.sqrt(self.left_wheel_speed.x * self.left_wheel_speed.x +
-        self.left_wheel_speed.y * self.left_wheel_speed.y +
-        self.left_wheel_speed.z * self.left_wheel_speed.z)
-    right_wheel_speed = math.sqrt(self.right_wheel_speed.x * self.right_wheel_speed.x +
-        self.right_wheel_speed.y * self.right_wheel_speed.y +
-        self.right_wheel_speed.z * self.right_wheel_speed.z)
+    left_wheel_speed = math.Sqrt(self.left_wheel_speed.X * self.left_wheel_speed.X +
+        self.left_wheel_speed.Y * self.left_wheel_speed.Y +
+        self.left_wheel_speed.Z * self.left_wheel_speed.Z)
+    right_wheel_speed = math.Sqrt(self.right_wheel_speed.X * self.right_wheel_speed.X +
+        self.right_wheel_speed.Y * self.right_wheel_speed.Y +
+        self.right_wheel_speed.Z * self.right_wheel_speed.Z)
     return
 }
 
@@ -457,13 +450,13 @@ func (self *Catapult) get_wheel_force() (left_wheel_force float64, right_wheel_f
 }
 
 // 耗时1
-func (self *Catapult) get_carried_balls() (n_plumbum int, n_stone int) {
+func (self *Catapult) get_cartridge() (n_plumbum int, n_stone int) {
     n_plumbum = 0
     n_stone = 0
-    for ball := range self.balls {
-        if ball.material == Plumbum {
+    for _, ball := range self.balls {
+        if ball.material == ui.Plumbum {
             n_plumbum += 1
-        } else if ball.material == Stone {
+        } else if ball.material == ui.Stone {
             n_stone += 1
         }
     }
@@ -482,6 +475,6 @@ func (self *Catapult) get_aim() (direction_angle float64, elevation_angle float6
 
 // 耗时随scan面积不同而不同
 // direction是方位角度，scope是左右范围角度和，distance是扫描距离深度
-func (self *Catapult) scan(direction float64, scope float64, distance float64) ([]Ball, []Catapult) {
-    return g_battle_ground.scan(self.pos, direction, scope, distance)
+func (self *Catapult) scan(direction float64, scope float64, distance float64) ([]*Ball, []*Catapult) {
+    return G_battle_ground.scan(self.pos, direction, scope, distance)
 }
