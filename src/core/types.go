@@ -4,14 +4,15 @@ import "ui"
 
 
 type Ball struct {
+    is_carried bool
+
+    // update by physics engine
+    speed ui.Vector
+    pos ui.Vector
+
     material ui.Material
 	weight int
     size int
-
-    pos ui.Vector
-    speed ui.Vector
-
-    is_carried bool
 }
 
 
@@ -24,31 +25,38 @@ type Instruction struct {
 }
 
 type Catapult struct {
-    name string
-    life int
-    energy int
-    weight int
-
-    direction float64
-    pos ui.Vector
+    // update by physics engine
     left_wheel_speed ui.Vector
     right_wheel_speed ui.Vector
+    pos ui.Vector
+    // change with speed
+    direction float64
 
+    // bot can set direct
 	left_wheel_force float64
     right_wheel_force float64
     aim_direction float64
     aim_elevation float64
 
-    capacity_energy int
-    capacity_weight int
-    capacity_size int
+    // communicate with bot
+	command_chan chan ui.Command
+	instruction_chan chan Instruction
 
+    // control by bot
     load_slot *Ball
 	balls []*Ball
 
-	command_chan chan ui.Command
-	instruction_chan chan Instruction
+    // bot ai
+    life int
+    energy int
     Bot ui.AI
+
+    // const
+    name string
+    weight int
+    capacity_energy int
+    capacity_weight int
+    capacity_size int
 }
 
 type Ground struct {

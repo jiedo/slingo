@@ -39,6 +39,8 @@ func main() {
         glog.Infof("cycle.")
         core.G_battle_ground.Step_all_catapults()
 
+        core.G_battle_ground.Update_ground()
+
         core.G_battle_ground.Refresh_ground()
 
         time.Sleep(time.Duration(1) * time.Second)

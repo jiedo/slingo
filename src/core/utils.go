@@ -55,10 +55,35 @@ func (self *Ground) Step_all_catapults() {
     }
 }
 
+func (self *Ground) Update_ground() {
+    glog.Info("Update...")
+    // to implement
+    for i, cata := range self.catapults {
+        glog.Infof("----------------bot%d(%s):----------------", i, cata.name)
+        glog.Infof("%v", cata)
+
+    }
+
+    for i, ball := range self.balls {
+        glog.Infof("----------------ball%d:----------------", i)
+        glog.Infof("%v", ball)
+
+    }
+
+}
+
+
 func (self *Ground) Refresh_ground() {
     glog.Info("refresh...")
+    // to implement
+    for i, cata := range self.catapults {
+        glog.Infof("----------------bot%d(%s):----------------", i, cata.name)
+        glog.Infof("%v", cata)
+
+    }
 }
 
 func (self *Ground) scan(position ui.Vector, direction float64, scope float64, distance float64) ([]*Ball, []*Catapult) {
+    // to implement
     return self.balls, self.catapults
 }
